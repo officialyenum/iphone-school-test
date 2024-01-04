@@ -52,6 +52,14 @@ class User extends Authenticatable
     }
 
     /**
+     * The badges that belong to the user.
+     */
+    public function badges()
+    {
+        return $this->hasMany(Badge::class);
+    }
+
+    /**
      * The lessons that a user has access to.
      */
     public function lessons()

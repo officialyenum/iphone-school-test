@@ -70,23 +70,6 @@ class LessonWatchedListener
                 # code...
                 break;
         }
-        switch ($commentsWrittenCount) {
-            case 1:
-                # code...
-                break;
-            case 5:
-                # code...
-                break;
-            case 10:
-                # code...
-                break;
-            case 25:
-                # code...
-                break;
-            case 50:
-                # code...
-                break;
-        }
         // Fire AchievementUnlocked event if an achievement is unlocked
         event(new AchievementUnlocked($achievementName, $event->user));
 
