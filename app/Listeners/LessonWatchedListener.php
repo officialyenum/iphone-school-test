@@ -90,15 +90,12 @@ class LessonWatchedListener
                 $badge_name = config('constant.badges')[0]['text'];
                 break;
             case 4:
-                # code...
                 $badge_name = config('constant.badges')[1]['text'];
                 break;
             case 8:
-                # code...
                 $badge_name = config('constant.badges')[2]['text'];
                 break;
             case 10:
-                # code...
                 $badge_name = config('constant.badges')[3]['text'];
                 break;
         }
