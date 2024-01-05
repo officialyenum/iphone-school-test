@@ -36,8 +36,8 @@ class LessonWatchedListener
         $lesson = $event->lesson;
         $user = $event->user;
         $user->lessons()->attach($lesson, ['watched' => true]);
-        $achievementName = "";
-        $badgeName = "";
+        $achievement_name = "";
+        $badge_name = "";
 
         // **Lessons Watched Achievements**
 
@@ -53,25 +53,25 @@ class LessonWatchedListener
         // $commentsWrittenCount = $user->comments()->count();
         switch ($lessonsWatchedCount) {
             case 1:
-                $achievementName = config('constant.lessonsWatched')[0]['text'];
+                $achievement_name = config('constant.lessonsWatched')[0]['text'];
                 break;
             case 5:
-                $achievementName = config('constant.lessonsWatched')[1]['text'];
+                $achievement_name = config('constant.lessonsWatched')[1]['text'];
                 break;
             case 10:
-                $achievementName = config('constant.lessonsWatched')[2]['text'];
+                $achievement_name = config('constant.lessonsWatched')[2]['text'];
                 break;
             case 25:
-                $achievementName = config('constant.lessonsWatched')[3]['text'];
+                $achievement_name = config('constant.lessonsWatched')[3]['text'];
                 break;
             case 50:
-                $achievementName = config('constant.lessonsWatched')[4]['text'];
+                $achievement_name = config('constant.lessonsWatched')[4]['text'];
                 break;
         }
 
-        if($achievementName){
+        if($achievement_name){
             // Fire AchievementUnlocked event if an achievement is unlocked
-            event(new AchievementUnlocked($achievementName, $user));
+            event(new AchievementUnlocked($achievement_name, $user));
         }
 
         // **Badges**
@@ -87,26 +87,26 @@ class LessonWatchedListener
         Log::info($unlockedAchievements);
         switch (count($unlockedAchievements)) {
             case 0:
-                $badgeName = config('constant.badges')[0]['text'];
+                $badge_name = config('constant.badges')[0]['text'];
                 break;
             case 4:
                 # code...
-                $badgeName = config('constant.badges')[1]['text'];
+                $badge_name = config('constant.badges')[1]['text'];
                 break;
             case 8:
                 # code...
-                $badgeName = config('constant.badges')[2]['text'];
+                $badge_name = config('constant.badges')[2]['text'];
                 break;
             case 10:
                 # code...
-                $badgeName = config('constant.badges')[3]['text'];
+                $badge_name = config('constant.badges')[3]['text'];
                 break;
         }
         Log::info("Badge Earned");
-        Log::info($badgeName);
-        if($badgeName){
+        Log::info($badge_name);
+        if($badge_name){
             // Fire BadgeUnlocked event if a new badge is earned
-            event(new BadgeUnlocked($badgeName, $event->user));
+            event(new BadgeUnlocked($badge_name, $event->user));
         }
     }
 }

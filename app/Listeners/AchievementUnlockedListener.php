@@ -28,6 +28,6 @@ class AchievementUnlockedListener
      */
     public function handle(AchievementUnlocked $event): void
     {
-        Log::info($event->achievementName. ' unlocked by ' . $event->user->name);
+        Log::info($event->achievement_name. ' unlocked by ' . $event->user->name);
     }
 }

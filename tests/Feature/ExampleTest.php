@@ -50,88 +50,47 @@ class ExampleTest extends TestCase
     }
 
     /** @test */
-    // public function test_user_unlocks_first_lesson_watched_achievement_using_service()
-    // {
-    //     Event::fake();
-    //     $user = $this->user;
-    //     $achievementService = new AchievementService();
+    public function test_the_application_event_dispatches()
+    {
+        Event::fake();
+        // Arrange: Create a user and initialize necessary variables
+        $user = User::factory()->create();
 
+        // Test Lesson Watched Event
+        $lesson = Lesson::factory()->create();
+        event(new LessonWatched($lesson, $user));
 
-    //     // Create an instance of the LessonWatched event
-    //     $lessonWatchedEvent = new LessonWatched($this->lessons[0], $user);
+        // Assert: Check if LessonWatched event is fired with the correct payload
+        Event::assertDispatched(LessonWatched::class, function ($event) use ($lesson, $user) {
+            return $event->lesson->id === $lesson->id && $event->user->id === $user->id;
+        });
 
-    //     // Create an instance of the LessonWatchedListener
-    //     $lessonWatchedListener = new LessonWatchedListener($achievementService);
+        // Test Comment Written Event
+        $newComment = Comment::factory()->userComment($user)->create();
+        event(new CommentWritten($newComment));
 
-    //     // Call the handle method manually
-    //     $lessonWatchedListener->handle($lessonWatchedEvent);
+        // Assert: Check if CommentWritten event is fired with the correct payload
+        Event::assertDispatched(CommentWritten::class, function ($event) use ($user, $newComment) {
+            return $event->comment->id === $newComment->id && $event->comment->user_id === $user->id;
+        });
 
-    //     // Dispatch LessonWatched event for the user
-    //     event(new LessonWatched($this->lessons[0], $user));
+        // Test Achievement Unlock Event
+        event(new AchievementUnlocked('5 Lessons Watched', $user));
+        // Assert: Check if AchievementUnlocked event is fired with the correct payload
+        Event::assertDispatched(AchievementUnlocked::class, function ($event) use ($user) {
+            return $event->achievement_name === '5 Lessons Watched' && $event->user->id === $user->id;
+        });
 
-    //     // Assert that LessonWatched event is fired
-    //     Event::assertDispatched(LessonWatched::class, function ($event) use ($user) {
-    //         return $event->lesson->id === $this->lessons[0]->id && $event->user->id === $user->id;
-    //     });
-
-    //     $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
-
-    //     // Check achievements endpoint response using the service
-    //     $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
-    //     $nextAvailableAchievements = $achievementService->getNextAvailableAchievements($user);
-    //     $currentBadge = $achievementService->getCurrentBadge($user);
-    //     $nextBadge = $achievementService->getNextBadge($user);
-    //     $remainingToUnlockNextBadge = $achievementService->getRemainingToUnlockNextBadge($user);
-
-    //     // Assertions for achievements
-    //     $this->assertEquals('First Lesson Watched', $unlockedAchievements[0]);
-    //     $this->assertEquals('5 Lessons Watched', $nextAvailableAchievements[0]);
-
-    //     // Assertions for badges
-    //     $this->assertEquals('Beginner: 0 Achievements', $currentBadge);
-    //     $this->assertEquals('Intermediate: 4 Achievements', $nextBadge);
-    //     $this->assertEquals(3, $remainingToUnlockNextBadge);
-    // }
+        // Test Badge Unlock Event
+        event(new BadgeUnlocked('Intermediate: 4 Achievements', $user));
+        // Assert: Check if BadgeUnlocked event is fired with the correct payload
+        Event::assertDispatched(BadgeUnlocked::class, function ($event) use ($user) {
+            return $event->badge_name === 'Intermediate: 4 Achievements' && $event->user->id === $user->id;
+        });
+    }
 
     /** @test */
-    // public function test_user_unlocks_first_comment_written_achievement_using_service()
-    // {
-    //     Event::fake();
-    //     $user = $this->user;
-    //     $achievementService = new AchievementService();
-
-    //     // Create a comment associated with the user
-    //     $newComment = Comment::factory()->userComment($user)->create();
-
-    //     // Dispatch CommentWritten event for the user
-    //     event(new CommentWritten($newComment));
-
-    //     // Assert that CommentWritten event is fired
-    //     Event::assertDispatched(CommentWritten::class, function ($event) use ($newComment, $user) {
-    //         return $event->comment->id === $newComment->id && $event->comment->user_id === $user->id;
-    //     });
-
-    //     $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
-
-    //     // Check achievements endpoint response using the service
-    //     $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
-    //     $nextAvailableAchievements = $achievementService->getNextAvailableAchievements($user);
-    //     $currentBadge = $achievementService->getCurrentBadge($user);
-    //     $nextBadge = $achievementService->getNextBadge($user);
-    //     $remainingToUnlockNextBadge = $achievementService->getRemainingToUnlockNextBadge($user);
-
-    //     // Assertions for achievements
-    //     $this->assertEquals('First Comment Written', $unlockedAchievements[0]);
-    //     $this->assertEquals('First Lesson Watched', $nextAvailableAchievements[0]);
-    //     $this->assertEquals('3 Comments Written', $nextAvailableAchievements[1]);
-
-    //     // Assertions for badges
-    //     $this->assertEquals('Beginner: 0 Achievements', $currentBadge);
-    //     $this->assertEquals('Intermediate: 4 Achievements', $nextBadge);
-    //     $this->assertEquals(3, $remainingToUnlockNextBadge);
-    // }
-
-    public function test_the_application_again_with_multiple_achievements_returns_a_successful_response(): void
+    public function test_the_application_with_multiple_achievements_returns_a_successful_response(): void
     {
         Event::fake();
         $achievementService = new AchievementService();
@@ -183,6 +142,88 @@ class ExampleTest extends TestCase
     }
 
     /** @test */
+    public function test_user_unlocks_first_lesson_watched_achievement_using_service()
+    {
+        Event::fake();
+        $user = $this->user;
+        $achievementService = new AchievementService();
+
+
+        // Create an instance of the LessonWatched event
+        $lessonWatchedEvent = new LessonWatched($this->lessons[0], $user);
+
+        // Create an instance of the LessonWatchedListener
+        $lessonWatchedListener = new LessonWatchedListener($achievementService);
+
+        // Call the handle method manually
+        $lessonWatchedListener->handle($lessonWatchedEvent);
+
+        // Dispatch LessonWatched event for the user
+        event(new LessonWatched($this->lessons[0], $user));
+
+        // Assert that LessonWatched event is fired
+        Event::assertDispatched(LessonWatched::class, function ($event) use ($user) {
+            return $event->lesson->id === $this->lessons[0]->id && $event->user->id === $user->id;
+        });
+
+        $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
+
+        // Check achievements endpoint response using the service
+        $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
+        $nextAvailableAchievements = $achievementService->getNextAvailableAchievements($user);
+        $currentBadge = $achievementService->getCurrentBadge($user);
+        $nextBadge = $achievementService->getNextBadge($user);
+        $remainingToUnlockNextBadge = $achievementService->getRemainingToUnlockNextBadge($user);
+
+        // Assertions for achievements
+        $this->assertEquals('First Lesson Watched', $unlockedAchievements[0]);
+        $this->assertEquals('5 Lessons Watched', $nextAvailableAchievements[0]);
+
+        // Assertions for badges
+        $this->assertEquals('Beginner: 0 Achievements', $currentBadge);
+        $this->assertEquals('Intermediate: 4 Achievements', $nextBadge);
+        $this->assertEquals(3, $remainingToUnlockNextBadge);
+    }
+
+    /** @test */
+    public function test_user_unlocks_first_comment_written_achievement_using_service()
+    {
+        Event::fake();
+        $user = $this->user;
+        $achievementService = new AchievementService();
+
+        // Create a comment associated with the user
+        $newComment = Comment::factory()->userComment($user)->create();
+
+        // Dispatch CommentWritten event for the user
+        event(new CommentWritten($newComment));
+
+        // Assert that CommentWritten event is fired
+        Event::assertDispatched(CommentWritten::class, function ($event) use ($newComment, $user) {
+            return $event->comment->id === $newComment->id && $event->comment->user_id === $user->id;
+        });
+
+        $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
+
+        // Check achievements endpoint response using the service
+        $unlockedAchievements = $achievementService->getUnlockedAchievements($user);
+        $nextAvailableAchievements = $achievementService->getNextAvailableAchievements($user);
+        $currentBadge = $achievementService->getCurrentBadge($user);
+        $nextBadge = $achievementService->getNextBadge($user);
+        $remainingToUnlockNextBadge = $achievementService->getRemainingToUnlockNextBadge($user);
+
+        // Assertions for achievements
+        $this->assertEquals('First Comment Written', $unlockedAchievements[0]);
+        $this->assertEquals('First Lesson Watched', $nextAvailableAchievements[0]);
+        $this->assertEquals('3 Comments Written', $nextAvailableAchievements[1]);
+
+        // Assertions for badges
+        $this->assertEquals('Beginner: 0 Achievements', $currentBadge);
+        $this->assertEquals('Intermediate: 4 Achievements', $nextBadge);
+        $this->assertEquals(3, $remainingToUnlockNextBadge);
+    }
+
+    /** @test */
     public function test_user_unlocks_new_achievement()
     {
         Event::fake();
@@ -212,7 +253,7 @@ class ExampleTest extends TestCase
 
         // Assert: Check if AchievementUnlocked event is fired with the correct payload
         Event::assertDispatched(AchievementUnlocked::class, function ($event) use ($user) {
-            return $event->achievementName === '5 Lessons Watched' && $event->user->id === $user->id;
+            return $event->achievement_name === '5 Lessons Watched' && $event->user->id === $user->id;
         });
     }
 
@@ -271,7 +312,7 @@ class ExampleTest extends TestCase
 
         // Assert: Check if BadgeUnlocked event is fired with the correct payload
         Event::assertDispatched(BadgeUnlocked::class, function ($event) use ($user) {
-            return $event->badgeName === 'Intermediate: 4 Achievements' && $event->user->id === $user->id;
+            return $event->badge_name === 'Intermediate: 4 Achievements' && $event->user->id === $user->id;
         });
     }
 

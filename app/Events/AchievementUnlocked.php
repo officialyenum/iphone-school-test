@@ -15,7 +15,7 @@ class AchievementUnlocked
 {
     use Dispatchable, SerializesModels;
 
-    public $achievementName;
+    public $achievement_name;
     public $user;
 
     /**
@@ -23,9 +23,9 @@ class AchievementUnlocked
      *
      * @return void
      */
-    public function __construct($achievementName, User $user)
+    public function __construct($achievement_name, User $user)
     {
-        $this->achievementName = $achievementName;
+        $this->achievement_name = $achievement_name;
         $this->user = $user;
     }
 

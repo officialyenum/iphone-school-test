@@ -28,6 +28,6 @@ class BadgeUnlockedListener
      */
     public function handle(BadgeUnlocked $event): void
     {
-        Log::info($event->badgeName. ' unlocked by ' . $event->user->name);
+        Log::info($event->badge_name. ' unlocked by ' . $event->user->name);
     }
 }

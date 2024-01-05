@@ -16,7 +16,7 @@ class BadgeUnlocked
 
     use Dispatchable, SerializesModels;
 
-    public $badgeName;
+    public $badge_name;
     public $user;
 
     /**
@@ -24,9 +24,9 @@ class BadgeUnlocked
      *
      * @return void
      */
-    public function __construct($badgeName, User $user)
+    public function __construct($badge_name, User $user)
     {
-        $this->badgeName = $badgeName;
+        $this->badge_name = $badge_name;
         $this->user = $user;
     }
 }
