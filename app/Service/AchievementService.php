@@ -2,6 +2,11 @@
 
 namespace App\Service;
 
+use App\Models\User;
+use App\Events\BadgeUnlocked;
+use App\Events\AchievementUnlocked;
+use Illuminate\Support\Facades\Log;
+
 class AchievementService
 {
 
@@ -10,14 +15,11 @@ class AchievementService
      * @var Array
      */
     protected $badges;
-
-
     /**
      *
      * @var Array
      */
     protected $lessonsWatchedAchievement;
-
     /**
      *
      * @var Array
@@ -38,7 +40,8 @@ class AchievementService
 
         foreach ($lessonAchievements as $achievement) {
             if ($lessonsWatched >= $achievement['value']) {
-                $this->unlockAchievementEvent($user, $achievement['text']);
+
+                event(new AchievementUnlocked($achievement['text'], $user));
             } else {
                 break; // Stop checking once the condition is not met
             }
@@ -51,7 +54,7 @@ class AchievementService
 
         foreach ($commentAchievements as $achievement) {
             if ($commentsWritten >= $achievement['value']) {
-                $this->unlockAchievementEvent($user, $achievement['text']);
+                event(new AchievementUnlocked($achievement['text'], $user));
             } else {
                 break; // Stop checking once the condition is not met
             }
@@ -64,29 +67,11 @@ class AchievementService
 
         foreach ($badges as $badge) {
             if ($totalAchievements >= $badge['value']) {
-                $this->unlockBadgeEvent($user, $badge['text']);
+                event(new BadgeUnlocked($badge['text'], $user));
             } else {
                 break; // Stop checking once the condition is not met
             }
         }
-    }
-
-    protected function unlockAchievementEvent(User $user, $achievementName)
-    {
-        // Logic to unlock achievement
-        // ...
-
-        // Fire AchievementUnlocked event
-        event(new AchievementUnlocked($achievementName, $user));
-    }
-
-    protected function unlockBadgeEvent(User $user, $badgeName)
-    {
-        // Logic to unlock badge
-        // ...
-
-        // Fire BadgeUnlocked event
-        event(new BadgeUnlocked($badgeName, $user));
     }
 
 
@@ -94,41 +79,41 @@ class AchievementService
     // An array of the user’s unlocked achievements by name
     public function getUnlockedAchievements(User $user)
     {
-        $watchCount = $user->watched->count();
+        $watchCount = $user->watched()->count();
+        // $watchCount = $user->watched->count();
         $commentsCount = $user->comments->count();
 
         $unlockedCommentsAchievement = array_filter($this->commentsWrittenAchievement, function ($comment) use ($commentsCount) {
             return $comment['value'] <= $commentsCount;
         });
+
         $unlockedWatchedAchievement = array_filter($this->lessonsWatchedAchievement, function ($lesson) use ($watchCount) {
             return $lesson['value'] <= $watchCount;
         });
 
-        return array_merge($unlockedWatchedAchievement, $unlockedCommentsAchievement);;
+        return array_merge(array_column($unlockedWatchedAchievement, 'text'), array_column($unlockedCommentsAchievement, 'text'));
     }
-    // next_available_achievements (string[ ])
-    // An array of the next achievements the user can unlock by name.
+
     public function getNextAvailableAchievements(User $user)
     {
         $unlockedAchievements = $this->getUnlockedAchievements($user);
-
         $nextAvailableAchievements = [];
-        foreach ($this->lessonsWatchedAchievement as $achievement) {
-            if (!in_array($achievement['text'], $unlockedAchievements)) {
-                $nextAvailableAchievements[] = $achievement['text'];
-                break; // Return only the next available achievement
-            }
-        }
+        // Lessons Watched Achievements
+        $lessonAchievements = array_diff(
+            array_column($this->lessonsWatchedAchievement, 'text'),
+            $unlockedAchievements,
+        );
+        $nextAvailableAchievements[] = reset($lessonAchievements);
 
-        foreach ($this->commentsWrittenAchievement as $achievement) {
-            if (!in_array($achievement['text'], $unlockedAchievements)) {
-                $nextAvailableAchievements[] = $achievement['text'];
-                break; // Return only the next available achievement
-            }
-        }
-
+        // Comments Written Achievements
+        $commentAchievements = array_diff(
+            array_column($this->commentsWrittenAchievement, 'text'),
+            $unlockedAchievements,
+        );
+        $nextAvailableAchievements[] = reset($commentAchievements);
         return $nextAvailableAchievements;
     }
+
 
     // current_badge (string)
     // The name of the user’s current badge.

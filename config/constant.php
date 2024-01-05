@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     // **Lessons Watched Achievements**
     'lessonsWatched' => [
         [
@@ -10,19 +10,19 @@ return [
         ],
         [
             'value' => 5,
-            'text' => '5 Lesson Watched',
+            'text' => '5 Lessons Watched',
         ],
         [
             'value' => 10,
-            'text' => '10 Lesson Watched',
+            'text' => '10 Lessons Watched',
         ],
         [
             'value' => 25,
-            'text' => '25 Lesson Watched',
+            'text' => '25 Lessons Watched',
         ],
         [
             'value' => 50,
-            'text' => '50 Lesson Watched',
+            'text' => '50 Lessons Watched',
         ],
     ],
 
@@ -34,19 +34,19 @@ return [
         ],
         [
             'value' => 3,
-            'text' => '3 Comment Written',
+            'text' => '3 Comments Written',
         ],
         [
             'value' => 5,
-            'text' => '5 Comment Written',
+            'text' => '5 Comments Written',
         ],
         [
             'value' => 10,
-            'text' => '10 Comment Written',
+            'text' => '10 Comments Written',
         ],
         [
             'value' => 20,
-            'text' => '20 Comment Written',
+            'text' => '20 Comments Written',
         ],
     ],
 

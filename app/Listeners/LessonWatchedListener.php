@@ -2,18 +2,28 @@
 
 namespace App\Listeners;
 
+use App\Events\BadgeUnlocked;
 use App\Events\LessonWatched;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Events\AchievementUnlocked;
+use App\Service\AchievementService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class LessonWatchedListener
 {
     /**
-     * Create the event listener.
+     * @var AchievementService
      */
-    public function __construct()
+    protected $achievementService;
+    /**
+     * Create the event listener.
+     *
+     * @param AchievementService $achievementService
+     */
+    public function __construct(AchievementService $achievementService)
     {
-        //
+        $this->achievementService = $achievementService;
     }
 
     /**
@@ -23,7 +33,9 @@ class LessonWatchedListener
     {
         // Logic to check lessons watched achievements
         // ...
-
+        $lesson = $event->lesson;
+        $user = $event->user;
+        $user->lessons()->attach($lesson, ['watched' => true]);
         $achievementName = "";
         $badgeName = "";
 
@@ -35,13 +47,32 @@ class LessonWatchedListener
         // - 25 Lessons Watched
         // - 50 Lessons Watched
 
-        // **Comments Written Achievements**
+        // $lessonsWatchedCount = $user->lessons->where('watched',1)->count();
+        $lessonsWatchedCount = $user->watched()->count();
 
-        // - First Comment Written
-        // - 3 Comments Written
-        // - 5 Comments Written
-        // - 10 Comments Written
-        // - 20 Comments Written
+        // $commentsWrittenCount = $user->comments()->count();
+        switch ($lessonsWatchedCount) {
+            case 1:
+                $achievementName = config('constant.lessonsWatched')[0]['text'];
+                break;
+            case 5:
+                $achievementName = config('constant.lessonsWatched')[1]['text'];
+                break;
+            case 10:
+                $achievementName = config('constant.lessonsWatched')[2]['text'];
+                break;
+            case 25:
+                $achievementName = config('constant.lessonsWatched')[3]['text'];
+                break;
+            case 50:
+                $achievementName = config('constant.lessonsWatched')[4]['text'];
+                break;
+        }
+
+        if($achievementName){
+            // Fire AchievementUnlocked event if an achievement is unlocked
+            event(new AchievementUnlocked($achievementName, $user));
+        }
 
         // **Badges**
 
@@ -51,29 +82,31 @@ class LessonWatchedListener
         // - Intermediate: 4 Achievements
         // - Advanced: 8 Achievements
         // - Master: 10 Achievements
-        $lessonsWatchedCount = 1;
-        $commentsWrittenCount = 1;
-        switch ($lessonsWatchedCount) {
-            case 1:
-                # code...
+        $unlockedAchievements = $this->achievementService->getUnlockedAchievements($user);
+        Log::info("achievementCount");
+        Log::info($unlockedAchievements);
+        switch (count($unlockedAchievements)) {
+            case 0:
+                $badgeName = config('constant.badges')[0]['text'];
                 break;
-            case 5:
+            case 4:
                 # code...
+                $badgeName = config('constant.badges')[1]['text'];
+                break;
+            case 8:
+                # code...
+                $badgeName = config('constant.badges')[2]['text'];
                 break;
             case 10:
                 # code...
-                break;
-            case 25:
-                # code...
-                break;
-            case 50:
-                # code...
+                $badgeName = config('constant.badges')[3]['text'];
                 break;
         }
-        // Fire AchievementUnlocked event if an achievement is unlocked
-        event(new AchievementUnlocked($achievementName, $event->user));
-
-        // Fire BadgeUnlocked event if a new badge is earned
-        event(new BadgeUnlocked($badgeName, $event->user));
+        Log::info("Badge Earned");
+        Log::info($badgeName);
+        if($badgeName){
+            // Fire BadgeUnlocked event if a new badge is earned
+            event(new BadgeUnlocked($badgeName, $event->user));
+        }
     }
 }

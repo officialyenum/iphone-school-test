@@ -2,14 +2,18 @@
 
 namespace App\Providers;
 
-use App\Events\CommentWritten;
+use App\Events\BadgeUnlocked;
 use App\Events\LessonWatched;
-use App\Listeners\CommentWrittenListener;
-use App\Listeners\LessonWatchedListener;
+use App\Events\CommentWritten;
+use App\Events\AchievementUnlocked;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
+use App\Listeners\BadgeUnlockedListener;
+use App\Listeners\LessonWatchedListener;
+use App\Listeners\CommentWrittenListener;
+use App\Listeners\AchievementUnlockedListener;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -27,6 +31,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         CommentWritten::class => [
             CommentWrittenListener::class,
+        ],
+        AchievementUnlocked::class => [
+            AchievementUnlockedListener::class,
+        ],
+        BadgeUnlocked::class => [
+            BadgeUnlockedListener::class,
         ]
     ];
 
@@ -43,6 +53,6 @@ class EventServiceProvider extends ServiceProvider
      */
     public function shouldDiscoverEvents(): bool
     {
-        return false;
+        return true;
     }
 }
